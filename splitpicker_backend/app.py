@@ -14,9 +14,14 @@ from pymongo.server_api import ServerApi
 
 uri = "mongodb+srv://marcusfredericks2021:WafeppXJY39n79MA@splitpickerdb.9k8wjks.mongodb.net/?retryWrites=true&w=majority"
 
-
 client = MongoClient(uri, server_api=ServerApi('1'))
+<<<<<<< HEAD
 db = client['SplitpickerDB']
+=======
+db = client["SplitpickerDB"]
+db = ["Users"]
+
+>>>>>>> 54976c2e8d72dc782a4878a8811ba3ffacf84cb7
 # Send a ping to confirm a successful connection
 try:
     client.admin.command('ping')
@@ -69,10 +74,11 @@ def Authenticated():
 
     return {"status": "Success."}, 400
 
-@app.route('/', methods=('GET', 'POST'))
+@app.route('/', methods=['GET', 'POST'])
 def index():
     return "Hello World!"
 
+<<<<<<< HEAD
 
 @app.route('/get/<collection_name>', methods = ['GET'])
 def get_collection(collection_name):
@@ -136,3 +142,51 @@ def get_collection(collection_name, id):
 
     return res
 
+=======
+@app.route('/test', methods=['POST'])
+def create_new_user():
+    request_body = None
+    try:
+        request_body = request.json
+    except Exception as _:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+    
+    username = request_body.get("username")
+    email = request_body.get("email")
+    password = request_body.get("password")
+    full_name = request_body.get("full_name")
+    user_Id = request_body.get("user_Id")
+
+    if not username or not email or not password or not full_name or not user_Id:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+
+    db.insert_one({
+        "username": username,
+        "email": email,
+        "passsword": password,
+        "full_name": full_name,
+        "user_Id": user_Id
+    })
+    
+    return request_body
+
+@app.route('/test', methods=['POST'])
+def create_new_split():
+    request_body = None
+    try:
+        request_body = request.json
+    except Exception as _:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+    
+    user_Id = request_body.get("user_Id")
+    split_data = request_body.get("split_data")
+    if not user_Id:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+    
+    return request_body
+
+@app.route('', methods=['GET'])
+def calculate_Score():
+    
+    return
+>>>>>>> 54976c2e8d72dc782a4878a8811ba3ffacf84cb7
