@@ -9,6 +9,19 @@ from firebase_admin import auth, credentials
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+uri = "mongodb+srv://marcusfredericks2021:WafeppXJY39n79MA@splitpickerdb.9k8wjks.mongodb.net/?retryWrites=true&w=majority"
+
+
+client = MongoClient(uri, server_api=ServerApi('1'))
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
