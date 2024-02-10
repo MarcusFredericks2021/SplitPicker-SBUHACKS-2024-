@@ -16,6 +16,7 @@ uri = "mongodb+srv://marcusfredericks2021:WafeppXJY39n79MA@splitpickerdb.9k8wjks
 
 
 client = MongoClient(uri, server_api=ServerApi('1'))
+db = client['SplitpickerDB']
 # Send a ping to confirm a successful connection
 try:
     client.admin.command('ping')
@@ -71,3 +72,67 @@ def Authenticated():
 @app.route('/', methods=('GET', 'POST'))
 def index():
     return "Hello World!"
+
+
+@app.route('/get/<collection_name>', methods = ['GET'])
+def get_collection(collection_name):
+    collection = None
+
+    if collection_name == 'exercise_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'body_part_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'equipment_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'target_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'Users':
+        collection = db[collection_name]
+
+    elif collection_name == 'Splits':
+        collection = db[collection_name]
+
+    else:
+        return {'status': False, "message": "Please provide proper URL parameter."}, 400
+
+    data = list(collection.find())
+
+    res = jsonify(data)
+
+    return res
+
+@app.route('/get/<collection_name>/<id>', methods = ['GET'])
+def get_collection(collection_name, id):
+    collection = None
+
+    if collection_name == 'exercise_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'body_part_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'equipment_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'target_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'Users':
+        collection = db[collection_name]
+
+    elif collection_name == 'Splits':
+        collection = db[collection_name]
+
+    else:
+        return {'status': False, "message": "Please provide proper URL parameter."}, 400
+
+    data = list(collection.find_one({'_id': id}))
+
+    res = jsonify(data)
+
+    return res
+
