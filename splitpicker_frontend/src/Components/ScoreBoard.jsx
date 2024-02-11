@@ -42,7 +42,7 @@ const ScoreBoard = () => {
                 </Card>
             </SimpleGrid >
             <>
-                <Button onClick={onOpen}>Open Modal</Button>
+                <Button className='mb-5' onClick={onOpen}>Why Did I Get This Score?</Button>
 
                 <Modal isOpen={isOpen} size='full' onClose={onClose}>
                     <ModalOverlay />
