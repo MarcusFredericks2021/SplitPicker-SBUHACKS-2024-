@@ -5,7 +5,7 @@ import { SplitData } from '../Context/SplitContext'
 
 const ExerciseModalGrid = (props) => {
 
-    const [maxIndex, setMaxIndex] = useState(9)
+    const [maxIndex, setMaxIndex] = useState(100)
     const [allExercise, setAllExercise] = useState(undefined)
     const [currExerciseRange, setCurrExerciseRange] = useState(undefined)
     const [currGifUrls, setCurrGifUrls] = useState(undefined)
