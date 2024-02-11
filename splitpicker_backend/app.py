@@ -335,7 +335,18 @@ def create_new_split():
     uploaded_document = splits_collection.find_one({"_id": inserted_id})
 
     if uploaded_document:
-        response = dumps(uploaded_document)
-        return response, 200
+        # Update the user document with the new split ID
+        user_document = users_collection.find_one({"_id": ObjectId(owner)})
+        if user_document:
+            # Add the new split ID to the 'splits' array in the user document
+            splits = user_document.get('splits', [])
+            splits.append(inserted_id)
+            users_collection.update_one({"_id": ObjectId(owner)}, {"$set": {"splits": splits}})
+            # Return the uploaded document and a success response
+            response = dumps(uploaded_document)
+            return response, 200
+        else:
+            return {'status': False, "message": "User not found."}, 404
     else:
         return {'status': False, "message": "Failed to retrieve uploaded document."}, 500
+
