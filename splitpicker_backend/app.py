@@ -240,7 +240,7 @@ def update_collection_by_id(collection_name):
 
     return res
 
-@app.route('/test', methods=['POST'])
+@app.route('/create_new_user', methods=['POST'])
 def create_new_user():
     request_body = None
     try:
@@ -251,20 +251,29 @@ def create_new_user():
     username = request_body.get("username")
     email = request_body.get("email")
     full_name = request_body.get("full_name")
-    user_Id = request_body.get("firebase_id")
+    user_id = request_body.get("firebase_id")
 
 
-    if not username or not email  or not full_name or not user_Id:
+    if not username or not email  or not full_name or not user_id:
         return {'status': False, "message": "Please provide proper request body."}, 400
 
-    db.insert_one({
-        "username": username,
-        "email": email,
-        "full_name": full_name,
-        "firebase_id": user_Id
-    })
+    res = None
+    try:
+        res = users_collection.insert_one({
+            "username": username,
+            "email": email,
+            "full_name": full_name,
+            "firebase_id": user_id,
+            "splits":[],
+        })
+    except Exception as _:
+        print(_)
+        return {'status': False, "message": "Error Uploading User Data"}, 400
     
-    return request_body
+    #print(res)
+    #res = dumps(res)
+
+    return f"Successfully created user data in MongoDB for user: {str(user_id)}!", 200
 
 @app.route('/create_new_split', methods=['POST'])
 

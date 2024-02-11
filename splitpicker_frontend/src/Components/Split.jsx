@@ -4,7 +4,7 @@ import { Box, Select } from '@chakra-ui/react';
 import { Day } from './Day';
 
 const Split = () => {
-    const { userData } = SplitData();
+    const { userData, saveDataToDatabase } = SplitData();
     const [splitData, setSplitData] = useState([]);
     const [splitId, setSplitId] = useState(-1);
     useEffect(() => {
@@ -13,7 +13,9 @@ const Split = () => {
         // setSplitData
 
         // test using userData["splits"]
-        setSplitData(userData["splits"])
+        setSplitData(userData["splits"]);
+
+        //(saveDataToDatabase)();
         //if (userData["splits"].length > 0)
         //setSplitId(userData["splits"][0]?._id?.$oid)
         // console.log("Split", splitData);
@@ -38,10 +40,10 @@ const Split = () => {
             </Box>
             <Box className='mt-5'>
                 {
-                    splitId != -1 && splitData[splitId] != undefined && Object.keys(splitData[splitId]).map((field) => {
+                    splitId != -1 && splitData[splitId] != undefined && Object.keys(splitData[splitId]).map((field, idx) => {
                         console.log(splitData[splitId][field]);
                         if (field.includes("day"))
-                            return <Day data={splitData[splitId][field]} dayNumber={field.replace('day', '')} />
+                            return <Day key={splitId + idx} data={splitData[splitId][field]} dayNumber={field.replace('day', '')} />
                         return <></>
                     }
                     )

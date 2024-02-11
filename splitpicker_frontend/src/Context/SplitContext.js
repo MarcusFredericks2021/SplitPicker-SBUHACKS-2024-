@@ -27,7 +27,7 @@ export const SplitContextProvider = ({ children }) => {
 
     const exampleSplit = {
         "_id": { "$oid": "65c704ff8db5d588ced50627" },
-        "name": "Da Greatest PPL TEST",
+        "name": "Da Greatest PPL TEST WOOWOOWOWOWO",
         "description": "Whats there to describe? Its the greatest PPL",
         "day1": {
             "is_rest": false,
@@ -107,6 +107,7 @@ export const SplitContextProvider = ({ children }) => {
     console.log(randomObjectId);
 
     const [currentSplitId, setCurrentSplitId] = useState("1");
+    const [dataLoaded, setDataLoaded] = useState(false);
 
     const [userData, setUserData] = useState(exampleUserData);
 
@@ -169,6 +170,9 @@ export const SplitContextProvider = ({ children }) => {
                         });
                     user_data.splits = final_splits;
                     setUserData(user_data);
+                    //(saveDataToDatabase)();
+                    setDataLoaded(true);
+                    //(saveDataToDatabase)();
                 }, (error) => {
                     console.log(error);
                 });
@@ -177,11 +181,12 @@ export const SplitContextProvider = ({ children }) => {
                 console.log(err);
             }
         })();
+
     }, [user])
 
     //console.log(JSON.stringify(userData));
 
-    const saveSplitsToDatabase = async (all_splits) => {
+    const saveDataToDatabase = async () => {
         const options = {
             headers: {
                 'Content-Type': 'application/json',
@@ -189,15 +194,42 @@ export const SplitContextProvider = ({ children }) => {
             }
         }
 
-        await axios.post('http://127.0.0.1:5000/setUserData', {
-            'user_id': user.uid,
-            'data': userData,
-        }, options).then((response) => {
-            console.log("Saved to Database (mongodb)");
-            console.log(JSON.stringify(response.data));
-        }, (error) => {
-            console.log(error);
-        });
+        if (!dataLoaded) {
+            console.log("Data not loaded yet! Not Updating on MongoDB!")
+            return;
+        }
+        console.log("Data loaded!!!");
+
+        let splits = userData.splits;
+
+        for (let split_index in splits) {
+            let split = splits[split_index];
+            for (let split_key in split) {
+                if (split_key.includes("day")) {
+                    let exercise_oids = [];
+                    let exercises = split[split_key]["exercises"];
+                    for (let exercise_index in exercises) {
+                        let oid = exercises[exercise_index]["_id"];
+                        exercise_oids.push(oid);
+                    }
+                    split[split_key]["exercises"] = exercise_oids;
+                }
+            }
+            //splits[split_index] = split;
+            await axios.post('http://127.0.0.1:5000/update/Splits/',
+                {
+                    "document": split
+
+                }).then(async (response) => {
+                    //console.log('exercisedata', JSON.stringify(response.data));
+                    console.log(response.data)
+                }, (error) => {
+                    console.log(error);
+                });
+        }
+
+
+        //setUserData(userData);
     }
 
     const getSplitsFromDatabase = async (ids) => {
@@ -269,7 +301,7 @@ export const SplitContextProvider = ({ children }) => {
         })
         setSplitData(newSplitData);
     }
-
+ 
     const setExercise = (dayIndex, exerciseIndex, exerciseData) => {
         //let exerciseData = exerciseData;
         
@@ -284,12 +316,12 @@ export const SplitContextProvider = ({ children }) => {
     saveSplitDataLocally();
     //console.log(day);
     //console.log(splitData[dayIndex])
-
-
+ 
+ 
     //let newSplitData = splitData.find((split_day) => split_day.day_name == day).exercises.push(exerciseData);
     //setSplitData(newSplitData);
 }
-
+ 
 const setExerciseSetsandReps = (dayIndex, exerciseIndex, newSets, newReps) => {
     splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfSets"] = newSets;
     splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfReps"] = newReps;
@@ -297,18 +329,18 @@ const setExerciseSetsandReps = (dayIndex, exerciseIndex, newSets, newReps) => {
     setSplitData(splitData);
     saveSplitDataLocally();
 }
-
+ 
 const addNewExercise = () => {
-
+ 
 }
-
+ 
 const removeExercise = (dayIndex, exerciseIndex) => {
     splitData[currentSplitId].split_data[dayIndex]["exercises"].splice(exerciseIndex, 1);
     setSplitData(splitData);
     saveSplitDataLocally();
 }
  */
-    return (<SplitContext.Provider value={{ userData, currentSplitId, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
+    return (<SplitContext.Provider value={{ userData, currentSplitId, saveDataToDatabase, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
 }
 
 export const SplitData = () => {

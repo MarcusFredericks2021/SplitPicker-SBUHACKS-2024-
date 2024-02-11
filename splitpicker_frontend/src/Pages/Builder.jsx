@@ -12,7 +12,7 @@ const Builder = () => {
             <Text fontSize='4xl' className='my-5'>Choose Your Exercises</Text>
             <Stack className='flex justify-center'>
                 <ScoreBoard />
-                <Split />
+                <Split key="split_comp" />
             </Stack>
         </section>
     )
