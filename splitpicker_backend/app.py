@@ -199,8 +199,6 @@ def get_user_by_firebase_id():
 @app.route('/update/<collection_name>/', methods = ['PUT'])
 def update_colection_by_id(collection_name):
 
-    #NEED TO FIX GETTING REQUEST BODY
-
     collection = None
     request_data = None
     document = None
@@ -208,6 +206,8 @@ def update_colection_by_id(collection_name):
     try:
         request_data = request.get_json()
         document = request_data.get('document', {})
+        # print("printing document")
+        # print(document)
     except Exception as _:
         return {'status': False, "message": "Please provide proper request body."}, 400
 
@@ -233,15 +233,19 @@ def update_colection_by_id(collection_name):
     else:
         return {'status': False, "message": "Please provide proper URL parameter."}, 400
 
-    print(document)
+    #print(document)
 
-    query = {'_id' : ObjectId(document['_id'])}
+    query = None
+    result = None
+    try:
+        query = {'_id' : ObjectId(document['_id']['$oid'])}
+        result = collection.update_one(query, {'$set': document}, upsert= False)
+    except Exception as _:
+        return {'status': False, "message": "Update Query broke OR Invalid ObjectId you stupid"}, 400
 
+    res = dumps(result.raw_result)
 
-
-    result = collection.update_one(query, {'$set': document}, upsert= False)
-
-    return result.raw_result
+    return res
 
 @app.route('/test', methods=['POST'])
 def create_new_user():
