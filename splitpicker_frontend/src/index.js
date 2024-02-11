@@ -7,13 +7,16 @@ import { BrowserRouter } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 import { AuthContextProvider } from './Context/AuthContext';
 import theme from './theme';
+import { SplitContextProvider } from './Context/SplitContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <AuthContextProvider>
-    <ChakraProvider theme={theme}>
-      <App />
-    </ChakraProvider>
+    <SplitContextProvider>
+      <ChakraProvider theme={theme}>
+        <App />
+      </ChakraProvider>
+    </SplitContextProvider>
   </AuthContextProvider>
 );
 

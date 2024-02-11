@@ -20,6 +20,7 @@ function AuthButtons(props) {
         if (!user && !anonymousUser) {
             anonymousSignIn();
         }
+        console.log(user);
     }, [user, anonymousSignIn, anonymousUser]);
 
     const loggedInComponent = <Popover>

@@ -8,8 +8,8 @@ const ScoreBoard = () => {
     </CardFooter>
     */
     return (
-        <SimpleGrid className='outline grid-flow-col p-5 mx-16' spacing={4}>
-            <Card>
+        <SimpleGrid className='outline grid-flow-col p-5 mx-48' spacing={4}>
+            <Card size="sm">
                 <CardHeader>
                     <Heading size='md'>Score</Heading>
                 </CardHeader>
@@ -17,7 +17,7 @@ const ScoreBoard = () => {
                     <Text>4/5</Text>
                 </CardBody>
             </Card>
-            <Card>
+            <Card size='sm'>
                 <CardHeader>
                     <Heading size='md'>Total Volume</Heading>
                 </CardHeader>
@@ -25,7 +25,7 @@ const ScoreBoard = () => {
                     <Text>100</Text>
                 </CardBody>
             </Card>
-            <Card>
+            <Card size='sm'>
                 <CardHeader>
                     <Heading size='md'>Time For Completion</Heading>
                 </CardHeader>
@@ -37,4 +37,4 @@ const ScoreBoard = () => {
     )
 }
 
-export default ScoreBoard
+export default ScoreBoard;

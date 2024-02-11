@@ -54,7 +54,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     const anonymousSignIn = async () => {
-        if (!user) {
+        if (false) {
             signInAnonymously(auth)
                 .then(async function (result) {
                     console.log(result);

@@ -7,25 +7,93 @@ const SplitContext = createContext()
 export const SplitContextProvider = ({ children }) => {
     const { user } = UserAuth();
 
-    const exerciseTemplate = {
-        blankExercise: true,
-        exerciseName: undefined,
-        exerciseType: undefined,
-        forceType: undefined,
-        mechanics: undefined,
-        primaryMuscle: undefined,
-        secondaryMuscles: [],
-        equipment: undefined,
-        amountOfReps: undefined,
-        amountOfSets: undefined,
+    const exampleExercise = {
+        "_id": { "$oid": "9031230902349" },
+        "bodyPart": "waist",
+        "equipment": "body weight",
+        "gifUrl": "https://v2.exercisedb.io/image/Hw0imkDQHuJxNO",
+        "id": "0001",
+        "name": "3/4 sit-up",
+        "target": "abs",
+        "secondaryMuscles": ["hip flexors", "lower back"],
+        "instructions": [
+            "Lie flat on your back with your knees bent and feet flat on the ground.",
+            "Place your hands behind your head with your elbows pointing outwards.",
+            "Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle.",
+            "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+            "Repeat for the desired number of repetitions."
+        ]
     }
-    const nonBlankExerciseExample = {
-        blankExercise: false,
-        exerciseName: "",
-        amountOfReps: 0,
-        amountOfSets: 0,
-        machineName: "",
-        bodyPartsWorked: []
+
+    const exampleSplit = {
+        "_id": { "$oid": "65c704ff8db5d588ced50627" },
+        "name": "Da Greatest PPL",
+        "description": "Whats there to describe? Its the greatest PPL",
+        "day1": {
+            "is_rest": false,
+            "description": "This is day 1",
+            "exercises": [exampleExercise, exampleExercise],
+            "set": [3, 3],
+            "reps": [10, 10],
+            "rest": [30, 30],
+        },
+        "day2": {
+            "is_rest": false,
+            "description": "This is day 2",
+            "exercises": [],
+            "set": [3, 3],
+            "reps": [10, 10],
+            "rest": [30, 30],
+        },
+        "day3": {
+            "is_rest": false,
+            "description": "This is day 3",
+            "exercises": [],
+            "set": [3, 3],
+            "reps": [10, 10],
+            "rest": [30, 30],
+        },
+        "day4": {
+            "is_rest": true,
+            "description": "This is day 4",
+            "exercises": [],
+            "set": [],
+            "reps": [],
+            "rest": [],
+        },
+        "day5": {
+            "is_rest": true,
+            "description": "This is day 5",
+            "exercises": [],
+            "set": [],
+            "reps": [],
+            "rest": [],
+        },
+        "day6": {
+            "is_rest": true,
+            "description": "This is day 6",
+            "exercises": [],
+            "set": [],
+            "reps": [],
+            "rest": [],
+        },
+        "day7": {
+            "is_rest": false,
+            "description": "This is day 7",
+            "exercises": [exampleExercise],
+            "set": [3, 3],
+            "reps": [10, 10],
+            "rest": [30, 30],
+        },
+    }
+
+    const exampleUserData = {
+        "_id": "1",
+        "firebase_id": "129012903212",
+        "username": "chris@gmail.com",
+        "email": "chris@gmail.com",
+        "full_name": "chris kim",
+        "splits": [exampleSplit],
     }
 
     const generateObjectId = () => {
@@ -38,35 +106,10 @@ export const SplitContextProvider = ({ children }) => {
     const randomObjectId = String(generateObjectId());
     console.log(randomObjectId);
 
-    const [currentSplitId, setCurrentSplitId] = useState(randomObjectId);
+    const [currentSplitId, setCurrentSplitId] = useState("1");
 
-    const blankSingleSplitData = {
-        [randomObjectId]: {
-            'creater_user_id': undefined,
-            'date_created': Date.now().toString(36),
-            'likes': 0,
-            'dislikes': 0,
-            'split_name': 'Default Name 1',
-            'split_data': [
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] }
-            ]
-        }
-    }
-
-    const defaultSplitData = blankSingleSplitData
-
-    const [splitData, setSplitData] = useState(defaultSplitData);
-    const [isReady, setIsReady] = useState(false);
-
-    const SPLIT_DATA_KEY = 'SPLIT_DATA_V1';
-    const SPLIT_ID_KEY = 'SPLIT_ID_V1';
-
+    const [userData, setUserData] = useState(exampleUserData);
+    //console.log(JSON.stringify(userData));
 
     const saveSplitsToDatabase = async (all_splits) => {
         const options = {
@@ -75,9 +118,10 @@ export const SplitContextProvider = ({ children }) => {
                 'Authorization': user.stsTokenManager.accessToken
             }
         }
-        await axios.post('http://127.0.0.1:5000/setUserSplits', {
+
+        await axios.post('http://127.0.0.1:5000/setUserData', {
             'user_id': user.uid,
-            'all_splits': all_splits,
+            'data': userData,
         }, options).then((response) => {
             console.log("Saved to Database (mongodb)");
             console.log(JSON.stringify(response.data));
@@ -86,7 +130,7 @@ export const SplitContextProvider = ({ children }) => {
         });
     }
 
-    const getSplitsFromDatabase = async () => {
+    const getSplitsFromDatabase = async (ids) => {
         const options = {
             headers: {
                 'Content-Type': 'application/json',
@@ -95,6 +139,7 @@ export const SplitContextProvider = ({ children }) => {
         }
         await axios.post('http://127.0.0.1:5000/getUserSplits', {
             'user_id': user.uid,
+            'data': ids
         }, options).then((response) => {
             console.log("Grabbed From Database (mongodb)");
             console.log(JSON.stringify(response.data));
@@ -104,92 +149,50 @@ export const SplitContextProvider = ({ children }) => {
         });
     }
 
-    const getDataFromMongo = async () => {
-        savedSplitData = getSplitsFromDatabase();
-        const aSplitId = Object.keys(savedSplitData);
-        if (savedSplitData != undefined) {
-            setSplitData(savedSplitData);
-            setCurrentSplitId(aSplitId);
-            console.log("LOADED FROM MONGO.")
-        }
-    }
-    //getDataFromMongo();
-
-    const saveSplitDataLocally = async () => {
-        console.log("Saving to async storage.")
-        AsyncStorage.setItem(SPLIT_DATA_KEY, JSON.stringify(splitData));
-        AsyncStorage.setItem(SPLIT_ID_KEY, JSON.stringify(currentSplitId));
-        saveSplitsToDatabase(splitData);
-    }
-
-    const clearAsyncStorage = async () => {
-        try {
-            await AsyncStorage.clear();
-            console.log('AsyncStorage cleared successfully.');
-        } catch (error) {
-            console.error('Error clearing AsyncStorage:', error);
-        }
-    };
     //clearAsyncStorage();
 
     const deleteSplit = (split_id) => {
-        let splitIds = Object.keys(splitData);
-        if (splitIds.length > 1) {
-            delete splitData[split_id];
-            setSplitData(splitData);
-            saveSplitDataLocally();
+        var index = userData["splits"].indexOf(split_id);
+        if (index > -1) {
+            userData["splits"].splice(index, 1);
         }
-        splitIds = Object.keys(splitData);
-        setCurrentSplitId(splitIds[0]);
+        setUserData(userData);
     }
 
     const changeSplitName = (split_id, new_split_name) => {
-        splitData[split_id]['split_name'] = new_split_name;
-        setSplitData(splitData);
-        saveSplitDataLocally();
+        userData["splits"][split_id]["name"] = new_split_name;
+        userData(userData);
     }
 
-    const addNewSplit = () => {
-        const newSplitId = String(generateObjectId());
-        let largestNumber = 0;
-        for (let split_id in splitData) {
-            let split_name = splitData[split_id]['split_name']
-            let parts = split_name.split(" ");
-            if (parts[0] == "Default" && parts[1] == "Name") {
-                let number = parseInt(parts[2]);
-                if (!isNaN(number))
-                    if (number > largestNumber) {
-                        largestNumber = number;
-                    }
+    const addNewSplit = async (name, description) => {
+        const options = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': user.stsTokenManager.accessToken
             }
         }
-        splitData[newSplitId] = {
-            'creater_user_id': undefined,
-            'date_created': Date.now().toString(36),
-            'likes': 0,
-            'dislikes': 0,
-            'split_name': 'Default Name ' + String(largestNumber + 1),
-            'split_data': [
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] },
-                { 'day_name': '', 'exercises': [] }
-            ]
-        }
-        setSplitData(splitData);
-        setCurrentSplitId(newSplitId);
-        saveSplitDataLocally();
+
+        await axios.post('http://127.0.0.1:5000/createNewSplit', {
+            'user_id': user.uid,
+            'name': name,
+            'description': description,
+        }, options).then((response) => {
+            console.log("Saved to Database (mongodb)");
+            console.log(JSON.stringify(response.data));
+            userData["splits"].append(response["_id"]["$oid"])
+            setUserData(userData);
+        }, (error) => {
+            console.log(error);
+        });
     }
 
     const setSplit = (split_id) => {
         setCurrentSplitId(split_id);
-        saveSplitDataLocally();
+        //saveSplitDataLocally();
     }
 
-    const addDay = () => {
+    /*
+    const addExerciseToDay = (day_number, exerise) => {
         let newSplitData = splitData[currentSplitId].split_data.push({
             day_name: "",
             exercises: []
@@ -197,51 +200,45 @@ export const SplitContextProvider = ({ children }) => {
         setSplitData(newSplitData);
     }
 
-    const addExerciseToDay = (dayIndex) => {
-        splitData[currentSplitId].split_data[dayIndex]['exercises'].push({ ...exerciseTemplate })
-        setSplitData(splitData);
-        saveSplitDataLocally();
-    }
-
     const setExercise = (dayIndex, exerciseIndex, exerciseData) => {
         //let exerciseData = exerciseData;
-        /*
+        
         exerciseData = {
             exercise_name: "",
             reps: 0,
             sets: 0
         }
-        */
-        splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex] = exerciseData
-        setSplitData(splitData);
-        saveSplitDataLocally();
-        //console.log(day);
-        //console.log(splitData[dayIndex])
+        
+    splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex] = exerciseData
+    setSplitData(splitData);
+    saveSplitDataLocally();
+    //console.log(day);
+    //console.log(splitData[dayIndex])
 
 
-        //let newSplitData = splitData.find((split_day) => split_day.day_name == day).exercises.push(exerciseData);
-        //setSplitData(newSplitData);
-    }
+    //let newSplitData = splitData.find((split_day) => split_day.day_name == day).exercises.push(exerciseData);
+    //setSplitData(newSplitData);
+}
 
-    const setExerciseSetsandReps = (dayIndex, exerciseIndex, newSets, newReps) => {
-        splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfSets"] = newSets;
-        splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfReps"] = newReps;
-        console.log(splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]);
-        setSplitData(splitData);
-        saveSplitDataLocally();
-    }
+const setExerciseSetsandReps = (dayIndex, exerciseIndex, newSets, newReps) => {
+    splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfSets"] = newSets;
+    splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfReps"] = newReps;
+    console.log(splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]);
+    setSplitData(splitData);
+    saveSplitDataLocally();
+}
 
-    const addNewExercise = () => {
+const addNewExercise = () => {
 
-    }
+}
 
-    const removeExercise = (dayIndex, exerciseIndex) => {
-        splitData[currentSplitId].split_data[dayIndex]["exercises"].splice(exerciseIndex, 1);
-        setSplitData(splitData);
-        saveSplitDataLocally();
-    }
-
-    return (<SplitContext.Provider value={{ splitData, currentSplitId, setExercise, addDay, addExerciseToDay, removeExercise, setExerciseSetsandReps, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
+const removeExercise = (dayIndex, exerciseIndex) => {
+    splitData[currentSplitId].split_data[dayIndex]["exercises"].splice(exerciseIndex, 1);
+    setSplitData(splitData);
+    saveSplitDataLocally();
+}
+ */
+    return (<SplitContext.Provider value={{ userData, currentSplitId, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
 }
 
 export const SplitData = () => {
