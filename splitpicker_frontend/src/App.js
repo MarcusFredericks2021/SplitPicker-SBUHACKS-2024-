@@ -7,6 +7,7 @@ import { Text } from '@chakra-ui/react';
 import About from './Pages/About';
 import Exercises from './Pages/Exercises';
 import Landing from './Pages/Landing';
+import Studies from './Pages/Studies';
 
 function App() {
   const [refresh, setRefresh] = useState(false);
@@ -25,12 +26,12 @@ function App() {
       <BrowserRouter>
         <NavBar refreshApp={refreshApp} />
         <Routes>
-
           <Route path={"/"} exact element={<Landing />} />
           <Route path={"/builder"} exact element={<Builder refresh={refresh} />} />
           <Route path={"/splits"} exact element={<Text fontSize='4xl' className='mt-10'>COMMUNITY SPLITSCOMING SOON.</Text>} />
           <Route path={"/about"} exact element={<About />} />
           <Route path={"/exercises"} exact element={<Exercises />} />
+          <Route path={"/studies"} exact element={<Studies />} />
         </Routes>
       </BrowserRouter>
     </div>

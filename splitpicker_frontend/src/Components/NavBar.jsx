@@ -33,7 +33,7 @@ import { SplitData } from '../Context/SplitContext';
 import { UserAuth } from '../Context/AuthContext';
 import { useRef, useState } from 'react';
 
-const Links = ['builder', 'exercises', 'splits', 'about'];
+const Links = ['builder', 'exercises', 'splits', 'studies', 'about'];
 
 export default function NavBar(props) {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -77,7 +77,7 @@ export default function NavBar(props) {
                         onClick={isOpen ? onClose : onOpen}
                     />
                     <HStack spacing={8} alignItems={'center'}>
-                        <Box>SplitPicker</Box>
+                        <NavLink to={"/"} className={({ isActive }) => isActive ? 'text-cyan-500' : 'text-white'}>SplitPicker</NavLink>
                         <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
                             {Links.map((link) => (
                                 <NavLink to={link} className={({ isActive }) => isActive ? 'text-green-500' : 'text-white'}>{link.charAt(0).toUpperCase() + link.slice(1)}</NavLink>
