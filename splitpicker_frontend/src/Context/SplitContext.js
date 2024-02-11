@@ -110,80 +110,88 @@ export const SplitContextProvider = ({ children }) => {
     const [dataLoaded, setDataLoaded] = useState(false);
 
     const [userData, setUserData] = useState(exampleUserData);
+    const [selectedSplitId, setSelectedSplitId] = useState(-1);
 
     useEffect(() => {
-        (async () => {
-            try {
-                await axios.get('http://127.0.0.1:5000/get_user_by_firebase_id/' + user.uid).then(async (response) => {
-                    console.log("LOADED USER DATA: ");
-                    //setUserData(response.data[0]);
-
-                    console.log(JSON.stringify(response.data));
-                    let user_data = response.data;
-                    let splits = response.data.splits;
-                    let split_ids = [];
-                    for (let split in splits) {
-                        //"/get_by_ids/<collection_name>/";
-                        //console.log(split);
-                        let id = splits[split]["$oid"];
-                        split_ids.push(id);
-                    }
-                    let final_splits = [];
-                    //console.log(split_ids);
-                    await axios.post('http://127.0.0.1:5000/get_by_ids/Splits/',
-                        {
-                            "ids": split_ids
-
-                        }).then(async (response) => {
-                            //console.log(JSON.stringify(response.data));
-                            for (let split_index in response.data) {
-                                let split = response.data[split_index];
-                                for (let split_key in split) {
-                                    if (split_key.includes("day")) {
-                                        let split_data = split[split_key];
-                                        let exercise_oids = split_data["exercises"];
-                                        let exercise_ids = [];;
-                                        for (let exercise_index in exercise_oids) {
-                                            //console.log(exercise_oids[exercise_index])
-                                            let exercise_id = exercise_oids[exercise_index]["$oid"];
-                                            exercise_ids.push(exercise_id);
-                                        }
-                                        //console.log("exerciseid" + exercise_id);
-
-                                        await axios.post('http://127.0.0.1:5000/get_by_ids/exercise_coll/',
-                                            {
-                                                "ids": exercise_ids
-
-                                            }).then(async (response) => {
-                                                //console.log('exercisedata', JSON.stringify(response.data));
-                                                split_data["exercises"] = response.data;
-                                            }, (error) => {
-                                                console.log(error);
-                                            });
-                                        split[split_key] = split_data;
-                                    }
-                                }
-                                final_splits.push(split);
-                            }
-                        }, (error) => {
-                            console.log(error);
-                        });
-                    user_data.splits = final_splits;
-                    setUserData(user_data);
-                    //(saveDataToDatabase)();
-                    setDataLoaded(true);
-                    //(saveDataToDatabase)();
-                }, (error) => {
-                    console.log(error);
-                });
-            } catch (err) {
-                console.log('Error occurred when fetching User Data.');
-                console.log(err);
-            }
-        })();
-
+        if (user)
+            (loadUserData)();
+        else if (dataLoaded) {
+            setSelectedSplitId(-1);
+            setUserData(exampleUserData);
+            setDataLoaded(false);
+        }
     }, [user])
 
+
+    const loadUserData = async () => {
+        try {
+            await axios.get('http://127.0.0.1:5000/get_user_by_firebase_id/' + user.uid).then(async (response) => {
+                console.log("LOADED USER DATA: ");
+                //setUserData(response.data[0]);
+
+                console.log(JSON.stringify(response.data));
+                let user_data = response.data;
+                let splits = response.data.splits;
+                let split_ids = [];
+                for (let split in splits) {
+                    //"/get_by_ids/<collection_name>/";
+                    //console.log(split);
+                    let id = splits[split]["$oid"];
+                    split_ids.push(id);
+                }
+                let final_splits = [];
+                //console.log(split_ids);
+                await axios.post('http://127.0.0.1:5000/get_by_ids/Splits/',
+                    {
+                        "ids": split_ids
+
+                    }).then(async (response) => {
+                        //console.log(JSON.stringify(response.data));
+                        for (let split_index in response.data) {
+                            let split = response.data[split_index];
+                            for (let split_key in split) {
+                                if (split_key.includes("day")) {
+                                    let split_data = split[split_key];
+                                    let exercise_oids = split_data["exercises"];
+                                    let exercise_ids = [];;
+                                    for (let exercise_index in exercise_oids) {
+                                        //console.log(exercise_oids[exercise_index])
+                                        let exercise_id = exercise_oids[exercise_index]["$oid"];
+                                        exercise_ids.push(exercise_id);
+                                    }
+                                    //console.log("exerciseid" + exercise_id);
+
+                                    await axios.post('http://127.0.0.1:5000/get_by_ids/exercise_coll/',
+                                        {
+                                            "ids": exercise_ids
+
+                                        }).then(async (response) => {
+                                            //console.log('exercisedata', JSON.stringify(response.data));
+                                            split_data["exercises"] = response.data;
+                                        }, (error) => {
+                                            console.log(error);
+                                        });
+                                    split[split_key] = split_data;
+                                }
+                            }
+                            final_splits.push(split);
+                        }
+                    }, (error) => {
+                        console.log(error);
+                    });
+                user_data.splits = final_splits;
+                setUserData(user_data);
+                //(saveDataToDatabase)();
+                setDataLoaded(true);
+                //(saveDataToDatabase)();
+            }, (error) => {
+                console.log(error);
+            });
+        } catch (err) {
+            console.log('Error occurred when fetching User Data.');
+            console.log(err);
+        }
+    }
     //console.log(JSON.stringify(userData));
 
     const saveDataToDatabase = async () => {
@@ -251,6 +259,36 @@ export const SplitContextProvider = ({ children }) => {
         });
     }
 
+    const createNewSplit = async (owner_id, name, description, refreshApp) => {//, name, description) => {
+        if (name == '') {
+            name = "Blank Name"
+        }
+        if (description == '') {
+            description = "Blank Description"
+        }
+        const options = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': user.stsTokenManager.accessToken
+            }
+        }
+        console.log("Sending request to create new split");
+        await axios.post('http://127.0.0.1:5000/create_new_split',
+            {
+                "owner": owner_id,
+                "name": name,
+                "description": description
+
+            }).then(async (response) => {
+                console.log("new split response:", response.data._id.$oid);
+                setCurrentSplitId(response.data._id.$oid)
+
+                //console.log(response.data)
+                refreshApp();
+            }, (error) => {
+                console.log(error);
+            });
+    }
     //clearAsyncStorage();
 
     const deleteSplit = (split_id) => {
@@ -301,7 +339,7 @@ export const SplitContextProvider = ({ children }) => {
         })
         setSplitData(newSplitData);
     }
- 
+     
     const setExercise = (dayIndex, exerciseIndex, exerciseData) => {
         //let exerciseData = exerciseData;
         
@@ -316,31 +354,31 @@ export const SplitContextProvider = ({ children }) => {
     saveSplitDataLocally();
     //console.log(day);
     //console.log(splitData[dayIndex])
- 
- 
+     
+     
     //let newSplitData = splitData.find((split_day) => split_day.day_name == day).exercises.push(exerciseData);
     //setSplitData(newSplitData);
-}
- 
-const setExerciseSetsandReps = (dayIndex, exerciseIndex, newSets, newReps) => {
+    }
+     
+    const setExerciseSetsandReps = (dayIndex, exerciseIndex, newSets, newReps) => {
     splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfSets"] = newSets;
     splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]["amountOfReps"] = newReps;
     console.log(splitData[currentSplitId].split_data[dayIndex]['exercises'][exerciseIndex]);
     setSplitData(splitData);
     saveSplitDataLocally();
-}
- 
-const addNewExercise = () => {
- 
-}
- 
-const removeExercise = (dayIndex, exerciseIndex) => {
+    }
+     
+    const addNewExercise = () => {
+     
+    }
+     
+    const removeExercise = (dayIndex, exerciseIndex) => {
     splitData[currentSplitId].split_data[dayIndex]["exercises"].splice(exerciseIndex, 1);
     setSplitData(splitData);
     saveSplitDataLocally();
-}
- */
-    return (<SplitContext.Provider value={{ userData, currentSplitId, saveDataToDatabase, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
+    }
+    */
+    return (<SplitContext.Provider value={{ selectedSplitId, setSelectedSplitId, loadUserData, userData, currentSplitId, createNewSplit, saveDataToDatabase, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
 }
 
 export const SplitData = () => {

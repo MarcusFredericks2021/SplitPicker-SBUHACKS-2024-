@@ -276,7 +276,6 @@ def create_new_user():
     return f"Successfully created user data in MongoDB for user: {str(user_id)}!", 200
 
 @app.route('/create_new_split', methods=['POST'])
-
 def create_new_split():
     request_body = None
     try:
@@ -284,9 +283,12 @@ def create_new_split():
     except Exception as _:
         return {'status': False, "message": "Please provide proper request body."}, 400
     
-    name = request_body.get("name")
-    description = request_body.get("description")
+    name = request_body.get("name", "Blank Name")
+    description = request_body.get("description", "Blank Description")
     owner = request_body.get("owner")
+
+    if not owner:
+        return {'status': False, "message": "Please provide a Owner Id (owner)"}, 400
 
     day1 = {
         "is_rest": None,
@@ -344,36 +346,42 @@ def create_new_split():
         "reps": [],
         "rest": []
     }
+    try:
+        result = splits_collection.insert_one({
+            "owner": owner,
+            "name": name,
+            "description": description,
+            "day1": day1,
+            "day2": day2,
+            "day3": day3,
+            "day4": day4,
+            "day5": day5,
+            "day6": day6,
+            "day7": day7
+        })
+        #print(owner)
 
-    result = splits_collection.insert_one({
-        "owner": owner,
-        "name": name,
-        "description": description,
-        "day1": day1,
-        "day2": day2,
-        "day3": day3,
-        "day4": day4,
-        "day5": day5,
-        "day6": day6,
-        "day7": day7
-    })
-
-    inserted_id = result.inserted_id
-    uploaded_document = splits_collection.find_one({"_id": inserted_id})
-
-    if uploaded_document:
-        # Update the user document with the new split ID
-        user_document = users_collection.find_one({"_id": ObjectId(owner)})
-        if user_document:
-            # Add the new split ID to the 'splits' array in the user document
-            splits = user_document.get('splits', [])
-            splits.append(inserted_id)
-            users_collection.update_one({"_id": ObjectId(owner)}, {"$set": {"splits": splits}})
-            # Return the uploaded document and a success response
-            response = dumps(uploaded_document)
-            return response, 200
+        inserted_id = result.inserted_id
+        uploaded_document = splits_collection.find_one({"_id": inserted_id})
+        #print(2)
+        if uploaded_document:
+            # Update the user document with the new split ID
+            user_document = users_collection.find_one({"firebase_id": owner})
+            if user_document:
+                # Add the new split ID to the 'splits' array in the user document
+                splits = user_document.get('splits', [])
+                splits.append(inserted_id)
+                #print(2)
+                users_collection.update_one({"firebase_id": owner}, {"$set": {"splits": splits}})
+                # Return the uploaded document and a success response
+                uploaded_document["_id"] = inserted_id
+                response = dumps(uploaded_document)
+                return response, 200
+            else:
+                return {'status': False, "message": "User not found."}, 404
         else:
-            return {'status': False, "message": "User not found."}, 404
-    else:
-        return {'status': False, "message": "Failed to retrieve uploaded document."}, 500
+            return {'status': False, "message": "Failed to retrieve uploaded document."}, 500
+    except Exception as _e:
+        print(_e)
+        return {'status': False, "message": str(_e)}, 400
 
