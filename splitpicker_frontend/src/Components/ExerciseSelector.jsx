@@ -1,17 +1,18 @@
-import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure } from '@chakra-ui/react'
+import { Box, Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure } from '@chakra-ui/react'
 import React, { useState } from 'react'
 import ExerciseModalGrid from './ExerciseModalGrid';
 
-const ExerciseSelector = () => {
+const ExerciseSelector = (props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const [nameInput, setNameInput] = useState('')
+    const [nameInput, setNameInput] = useState('');
+    const { dayNumber } = props;
 
     const handleNameChange = (e) => setNameInput(e.target.value)
 
     return (
-        <>
-            <Button onClick={onOpen}>Select Exercise</Button>
-            <Modal isOpen={isOpen} size = 'full' onClose={onClose}>
+        <Box className=' min-w-28'>
+            <Button onClick={onOpen}>Add Exercise</Button>
+            <Modal isOpen={isOpen} size='full' onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Select Exercise</ModalHeader>
@@ -26,7 +27,7 @@ const ExerciseSelector = () => {
                             <TabPanels>
                                 <TabPanel>
                                     {/* <p>one!</p> */}
-                                    <ExerciseModalGrid />
+                                    <ExerciseModalGrid dayNumber={dayNumber} closeModal={onClose} />
                                 </TabPanel>
                                 <TabPanel>
                                     <p>two!</p>
@@ -56,7 +57,7 @@ const ExerciseSelector = () => {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-        </>
+        </Box>
     )
 }
 

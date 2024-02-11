@@ -25,7 +25,6 @@ function App() {
       <BrowserRouter>
         <NavBar refreshApp={refreshApp} />
         <Routes>
-
           <Route path={"/"} exact element={<Landing />} />
           <Route path={"/builder"} exact element={<Builder refresh={refresh} />} />
           <Route path={"/splits"} exact element={<Text fontSize='4xl' className='mt-10'>COMMUNITY SPLITSCOMING SOON.</Text>} />

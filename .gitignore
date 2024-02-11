@@ -22,3 +22,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 splitpicker_backend/__pycache__/*
+
+splitpcker_frontend/src/firebase.js

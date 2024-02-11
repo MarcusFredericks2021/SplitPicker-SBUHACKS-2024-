@@ -291,56 +291,56 @@ def create_new_split():
         return {'status': False, "message": "Please provide a Owner Id (owner)"}, 400
 
     day1 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],
         "rest": []
     }
     day2 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],
         "rest": []
     }
     day3 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],
         "rest": []
     }
     day4 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],
         "rest": []
     }
     day5 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],
         "rest": []
     }
     day6 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],
         "rest": []
     }
     day7 = {
-        "is_rest": None,
-        "description": None,
+        "is_rest": False,
+        "description": "",
         "exercises": [],
         "sets": [],
         "reps": [],

@@ -122,6 +122,38 @@ export const SplitContextProvider = ({ children }) => {
         }
     }, [user])
 
+    const addExerciseToDay = async (dayNumber, exercise_data) => {
+        // splitid is just the selected one
+        let splits = userData.splits;
+        console.log("usserdata before change", splits);
+        console.log("exercise_data", exercise_data)
+
+        for (let split_index in splits) {
+            let split = splits[split_index];
+            for (let split_key in split) {
+                if (split_key.includes("day")) {
+                    let day_number = split_key.replace("day", '');
+                    if (day_number != dayNumber) {
+                        console.log("day_number", day_number);
+                        console.log("dayNumber", dayNumber);
+                        continue;
+                    }
+                    //let exercises = split[split_key]["exercises"];
+                    //for (let exercise_index in exercises) {
+                    //
+                    //}
+                    split[split_key]["exercises"].push(exercise_data);
+                    console.log("new splti exercise array", split[split_key]["exercises"])
+                }
+            }
+            splits[split_index] = split;
+        }
+        userData.splits = splits;
+        console.log("ADDED TO SPLIT DATA", userData);
+        (saveDataToDatabase)(userData);
+        setUserData(userData);
+    }
+
 
     const loadUserData = async () => {
         try {
@@ -194,7 +226,7 @@ export const SplitContextProvider = ({ children }) => {
     }
     //console.log(JSON.stringify(userData));
 
-    const saveDataToDatabase = async () => {
+    const saveDataToDatabase = async (splitDataToSave) => {
         const options = {
             headers: {
                 'Content-Type': 'application/json',
@@ -202,13 +234,18 @@ export const SplitContextProvider = ({ children }) => {
             }
         }
 
+        if (!splitDataToSave)
+            splitDataToSave = userData;
+
+        splitDataToSave = JSON.parse(JSON.stringify(splitDataToSave));
+
         if (!dataLoaded) {
             console.log("Data not loaded yet! Not Updating on MongoDB!")
             return;
         }
         console.log("Data loaded!!!");
 
-        let splits = userData.splits;
+        let splits = splitDataToSave.splits;
 
         for (let split_index in splits) {
             let split = splits[split_index];
@@ -235,6 +272,7 @@ export const SplitContextProvider = ({ children }) => {
                     console.log(error);
                 });
         }
+        console.log("Saved all split data!!!");
 
 
         //setUserData(userData);
@@ -378,7 +416,7 @@ export const SplitContextProvider = ({ children }) => {
     saveSplitDataLocally();
     }
     */
-    return (<SplitContext.Provider value={{ selectedSplitId, setSelectedSplitId, loadUserData, userData, currentSplitId, createNewSplit, saveDataToDatabase, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
+    return (<SplitContext.Provider value={{ selectedSplitId, setSelectedSplitId, loadUserData, userData, addExerciseToDay, currentSplitId, createNewSplit, saveDataToDatabase, addNewSplit, setSplit, changeSplitName, deleteSplit }}>{children}</SplitContext.Provider>)
 }
 
 export const SplitData = () => {
