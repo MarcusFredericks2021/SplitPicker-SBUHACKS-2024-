@@ -79,6 +79,7 @@ def Authenticated():
     return {"status": "Success."}, 400
 
 @app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     return "Hello World!"
 
