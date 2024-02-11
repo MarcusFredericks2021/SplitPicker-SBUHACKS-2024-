@@ -14,15 +14,56 @@ import {
     useDisclosure,
     useColorModeValue,
     Stack,
+    useToast,
+    AlertDialog,
+    AlertDialogOverlay,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogBody,
+    AlertDialogFooter,
+    FormControl,
+    FormLabel,
+    FormHelperText,
+    Input,
 } from '@chakra-ui/react'
 import { HamburgerIcon, CloseIcon, AddIcon } from '@chakra-ui/icons'
 import { NavLink } from 'react-router-dom'
 import AuthButtons from './AuthButtons';
+import { SplitData } from '../Context/SplitContext';
+import { UserAuth } from '../Context/AuthContext';
+import { useRef, useState } from 'react';
 
 const Links = ['builder', 'exercises', 'splits', 'about'];
 
-export default function NavBar() {
-    const { isOpen, onOpen, onClose } = useDisclosure()
+export default function NavBar(props) {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { createNewSplit } = SplitData();
+    const { user } = UserAuth();
+    const toast = useToast();
+
+    const { isOpen: createIsOpen, onOpen: onCreateIsOpen, onClose: onCreateIsClose } = useDisclosure();
+    const cancelRef = useRef()
+
+
+    const [newSplitName, setNewSplitName] = useState('');
+    const [newSplitDesc, setNewSplitDesc] = useState('');
+
+    const { refreshApp } = props;
+    const createNewSplitHandler = async () => {
+        if (user) {
+            const createNewSplitPromise = createNewSplit(user.uid, newSplitName, newSplitDesc, refreshApp);
+            toast.promise(createNewSplitPromise, {
+                success: { title: 'New Split Created', description: 'Created New Split! Select it!' },
+                error: { title: 'Split Failed To Create :(', description: 'Something went wrong... Please contact an administrator' },
+                loading: { title: 'Creating New Split...', description: 'Please wait! :)' },
+            })
+            //refreshApp();
+        }
+    }
+
+
+    const handleNameChange = (e) => setNewSplitName(e.target.value);
+    const handleDescChange = (e) => setNewSplitDesc(e.target.value);
 
     return (
         <>
@@ -49,9 +90,49 @@ export default function NavBar() {
                             colorScheme={'blue'}
                             size={'sm'}
                             mr={4}
-                            leftIcon={<AddIcon />}>
+                            leftIcon={<AddIcon />}
+                            onClick={onCreateIsOpen}>
                             Create New Split
                         </Button>
+                        <AlertDialog
+                            isOpen={createIsOpen}
+                            leastDestructiveRef={cancelRef}
+                            onClose={onCreateIsClose}
+                        >
+                            <AlertDialogOverlay>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                                        Create New Split
+                                    </AlertDialogHeader>
+
+                                    <AlertDialogBody>
+                                        <FormControl>
+                                            <FormLabel>New Split Name</FormLabel>
+                                            <Input onChange={handleNameChange} input={newSplitName} type='name' />
+                                            <FormHelperText>Enter a Name for the new Split</FormHelperText>
+                                        </FormControl>
+
+                                        <FormControl className='my-5'>
+                                            <FormLabel>New Split Description</FormLabel>
+                                            <Input onChange={handleDescChange} input={newSplitDesc} type='description' />
+                                            <FormHelperText>Enter a Description for the new Split</FormHelperText>
+                                        </FormControl>
+                                    </AlertDialogBody>
+
+                                    <AlertDialogFooter>
+                                        <Button ref={cancelRef} onClick={onCreateIsClose}>
+                                            Cancel
+                                        </Button>
+                                        <Button colorScheme='green' onClick={async () => {
+                                            await createNewSplitHandler();
+                                            onCreateIsClose();
+                                        }} ml={3}>
+                                            Create
+                                        </Button>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialogOverlay>
+                        </AlertDialog>
                         <AuthButtons />
                         {/*
                         <Menu>

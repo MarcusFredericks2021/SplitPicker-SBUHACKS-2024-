@@ -12,6 +12,29 @@ export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [anonymousUser, setAnonymousUser] = useState(null);
 
+    const registerNewUserOnDatabase = async (user) => {
+        const options = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': user.stsTokenManager.accessToken
+            }
+        }
+        await axios.post('http://127.0.0.1:5000/create_new_user', {
+            'firebase_id': user.uid,
+            'email': user.email,
+            'username': user.email, // for now
+            'full_name': user.displayName
+        }, options).then((response) => {
+            console.log(JSON.stringify(response.data));
+        }, (error) => {
+            console.log(JSON.stringify(error));
+            if (error.code === 'auth/wrong-password') {
+                alert('Wrong password provided.');
+            } else {
+                alert('An error occurred while signing in.');
+            }
+        });
+    }
     //const navigation = useNavigation();
     const googleSignIn = async () => {
         signOut(auth)
@@ -24,7 +47,7 @@ export const AuthContextProvider = ({ children }) => {
         const googleAuthProvider = new GoogleAuthProvider();
         signInWithPopup(auth, googleAuthProvider).then(async function (result) {
             const isNewUser = result._tokenResponse.isNewUser;
-            //console.log(isNewUser ? "This user just registered" : "Existing User");
+            console.log(isNewUser ? "This user just registered" : "Existing User");
             if (isNewUser) {
                 const options = {
                     headers: {
@@ -32,6 +55,7 @@ export const AuthContextProvider = ({ children }) => {
                         'Authorization': result.user.stsTokenManager.accessToken
                     }
                 }
+                await registerNewUserOnDatabase(result.user);
                 /*
                 await axios.post(API_URL + 'createNewUser', {
                     'user_id': result.user.uid,
@@ -67,28 +91,7 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
-    const registerNewUserOnDatabase = async (user, display_name) => {
-        const options = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': user.stsTokenManager.accessToken
-            }
-        }
-        await axios.post(API_URL + 'createNewUser', {
-            'user_id': user.uid,
-            'email': user.email,
-            'display_name': display_name
-        }, options).then((response) => {
-            console.log(JSON.stringify(response.data));
-        }, (error) => {
-            console.log(JSON.stringify(error));
-            if (error.code === 'auth/wrong-password') {
-                alert('Wrong password provided.');
-            } else {
-                alert('An error occurred while signing in.');
-            }
-        });
-    }
+
 
     /*
     const uploadScore = async (score, amount_of_elements) => {
