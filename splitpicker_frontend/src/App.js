@@ -4,6 +4,8 @@ import Builder from './Pages/Builder';
 import NavBar from './Components/NavBar';
 import { useEffect, useState } from 'react';
 import { Text } from '@chakra-ui/react';
+import About from './Pages/About';
+import Exercises from './Pages/Exercises';
 
 function App() {
   const [refresh, setRefresh] = useState(false);
@@ -23,9 +25,9 @@ function App() {
         <NavBar refreshApp={refreshApp} />
         <Routes>
           <Route path={"/builder"} exact element={<Builder refresh={refresh} />} />
-          <Route path={"/splits"} exact element={<Text>Splits</Text>} />
-          <Route path={"/about"} exact element={<Text>About</Text>} />
-          <Route path={"/exercises"} exact element={<Text>Exercises</Text>} />
+          <Route path={"/splits"} exact element={<Text fontSize='4xl' className='mt-10'>COMMUNITY SPLITS COMING SOON.</Text>} />
+          <Route path={"/about"} exact element={<About />} />
+          <Route path={"/exercises"} exact element={<Exercises />} />
         </Routes>
       </BrowserRouter>
     </div>
