@@ -131,7 +131,7 @@ def get_collection(collection_name):
     res = dumps(data)
     return res
 
-@app.route('/get_by_ids/<collection_name>/', methods = ['GET'])
+@app.route('/get_by_ids/<collection_name>/', methods = ['POST'])
 def get_collection_by_id(collection_name):
     collection = None
 
@@ -174,30 +174,21 @@ def get_collection_by_id(collection_name):
 
     return res
 
-@app.route('/get_user_by_firebase_id', methods = ['GET'])
-def get_user_by_firebase_id():
-    collection = None
-
-    request_data = None
-    ids = None
-    try:
-        request_data = request.get_json()
-    except Exception as _:
-        return {'status': False, "message": "Please provide proper request body."}, 400
-
-    #print(id
-    uid_token = request_data.get("user_id")
+@app.route('/get_user_by_firebase_id/<user_id>', methods = ['GET'])
+def get_user_by_firebase_id(user_id):
+    if not user_id:
+        return {'status': False, "message": "Please provide Firebase ID (user_id)"}, 400
 
     collection = db["Users"]
 
-    documents = list(collection.find({'firebase_id': uid_token}))
+    documents = list(collection.find({'firebase_id': user_id}))[0]
 
     res = dumps(documents)
 
     return res
 
-@app.route('/update/<collection_name>/', methods = ['PUT'])
-def update_colection_by_id(collection_name):
+@app.route('/update/<collection_name>/', methods = ['POST'])
+def update_collection_by_id(collection_name):
 
     collection = None
     request_data = None
@@ -239,15 +230,17 @@ def update_colection_by_id(collection_name):
     result = None
     try:
         query = {'_id' : ObjectId(document['_id']['$oid'])}
+        del document['_id']
         result = collection.update_one(query, {'$set': document}, upsert= False)
     except Exception as _:
+        print(_)
         return {'status': False, "message": "Update Query broke OR Invalid ObjectId you stupid"}, 400
 
     res = dumps(result.raw_result)
 
     return res
 
-@app.route('/test', methods=['POST'])
+@app.route('/create_new_user', methods=['POST'])
 def create_new_user():
     request_body = None
     try:
@@ -258,20 +251,29 @@ def create_new_user():
     username = request_body.get("username")
     email = request_body.get("email")
     full_name = request_body.get("full_name")
-    user_Id = request_body.get("firebase_id")
+    user_id = request_body.get("firebase_id")
 
 
-    if not username or not email  or not full_name or not user_Id:
+    if not username or not email  or not full_name or not user_id:
         return {'status': False, "message": "Please provide proper request body."}, 400
 
-    db.insert_one({
-        "username": username,
-        "email": email,
-        "full_name": full_name,
-        "firebase_id": user_Id
-    })
+    res = None
+    try:
+        res = users_collection.insert_one({
+            "username": username,
+            "email": email,
+            "full_name": full_name,
+            "firebase_id": user_id,
+            "splits":[],
+        })
+    except Exception as _:
+        print(_)
+        return {'status': False, "message": "Error Uploading User Data"}, 400
     
-    return request_body
+    #print(res)
+    #res = dumps(res)
+
+    return f"Successfully created user data in MongoDB for user: {str(user_id)}!", 200
 
 @app.route('/create_new_split', methods=['POST'])
 def create_new_split():
@@ -281,9 +283,12 @@ def create_new_split():
     except Exception as _:
         return {'status': False, "message": "Please provide proper request body."}, 400
     
-    name = request_body.get("name")
-    description = request_body.get("description")
+    name = request_body.get("name", "Blank Name")
+    description = request_body.get("description", "Blank Description")
     owner = request_body.get("owner")
+
+    if not owner:
+        return {'status': False, "message": "Please provide a Owner Id (owner)"}, 400
 
     day1 = {
         "is_rest": None,
@@ -341,25 +346,42 @@ def create_new_split():
         "reps": [],
         "rest": []
     }
+    try:
+        result = splits_collection.insert_one({
+            "owner": owner,
+            "name": name,
+            "description": description,
+            "day1": day1,
+            "day2": day2,
+            "day3": day3,
+            "day4": day4,
+            "day5": day5,
+            "day6": day6,
+            "day7": day7
+        })
+        #print(owner)
 
-    result = splits_collection.insert_one({
-        "owner": owner,
-        "name": name,
-        "description": description,
-        "day1": day1,
-        "day2": day2,
-        "day3": day3,
-        "day4": day4,
-        "day5": day5,
-        "day6": day6,
-        "day7": day7
-    })
+        inserted_id = result.inserted_id
+        uploaded_document = splits_collection.find_one({"_id": inserted_id})
+        #print(2)
+        if uploaded_document:
+            # Update the user document with the new split ID
+            user_document = users_collection.find_one({"firebase_id": owner})
+            if user_document:
+                # Add the new split ID to the 'splits' array in the user document
+                splits = user_document.get('splits', [])
+                splits.append(inserted_id)
+                #print(2)
+                users_collection.update_one({"firebase_id": owner}, {"$set": {"splits": splits}})
+                # Return the uploaded document and a success response
+                uploaded_document["_id"] = inserted_id
+                response = dumps(uploaded_document)
+                return response, 200
+            else:
+                return {'status': False, "message": "User not found."}, 404
+        else:
+            return {'status': False, "message": "Failed to retrieve uploaded document."}, 500
+    except Exception as _e:
+        print(_e)
+        return {'status': False, "message": str(_e)}, 400
 
-    inserted_id = result.inserted_id
-    uploaded_document = splits_collection.find_one({"_id": inserted_id})
-
-    if uploaded_document:
-        response = dumps(uploaded_document)
-        return response, 200
-    else:
-        return {'status': False, "message": "Failed to retrieve uploaded document."}, 500
