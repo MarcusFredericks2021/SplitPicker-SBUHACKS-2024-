@@ -1,7 +1,11 @@
 import json
 import os
 import re
+import string
+from bson.objectid import ObjectId
 from functools import wraps
+from bson.json_util import dumps
+
 
 import firebase_admin
 from dotenv import load_dotenv
@@ -13,6 +17,19 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
 uri = "mongodb+srv://marcusfredericks2021:WafeppXJY39n79MA@splitpickerdb.9k8wjks.mongodb.net/?retryWrites=true&w=majority"
+
+class JSONEncoder(json.JSONEncoder):
+    ''' extend json-encoder class'''
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        # if isinstance(o, datetime.datetime):
+        #     return str(o)
+        return json.JSONEncoder.default(self, o)
+
+
+# use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
+
 
 
 client = MongoClient(uri, server_api=ServerApi('1'))
@@ -27,7 +44,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-
+app.json_encoder = JSONEncoder
 
 def authenticate_request(func):
     @wraps(func)
@@ -74,7 +91,7 @@ def index():
     return "Hello World!"
 
 
-@app.route('/get/<collection_name>', methods = ['GET'])
+@app.route('/get/<collection_name>/', methods = ['GET'])
 def get_collection(collection_name):
     collection = None
 
@@ -101,13 +118,22 @@ def get_collection(collection_name):
 
     data = list(collection.find())
 
-    res = jsonify(data)
-
+    res = dumps(data)
     return res
 
-@app.route('/get/<collection_name>/<id>', methods = ['GET'])
-def get_collection(collection_name, id):
+@app.route('/get_by_ids/<collection_name>/', methods = ['GET'])
+def get_collection_by_id(collection_name):
     collection = None
+
+    request_data = None
+    ids = None
+    try:
+        request_data = request.get_json()
+        ids = request_data.get('ids', [])
+    except Exception as _:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+
+    #print(id)
 
     if collection_name == 'exercise_coll':
         collection = db[collection_name]
@@ -130,9 +156,59 @@ def get_collection(collection_name, id):
     else:
         return {'status': False, "message": "Please provide proper URL parameter."}, 400
 
-    data = list(collection.find_one({'_id': id}))
+    object_ids = [ObjectId(id) for id in ids]
 
-    res = jsonify(data)
+    documents = list(collection.find({'_id': {'$in': object_ids}}))
+
+    res = dumps(documents)
 
     return res
+
+
+@app.route('/update/<collection_name>/', methods = ['PUT'])
+def update_colection(collection_name):
+
+    #NEED TO FIX GETTING REQUEST BODY
+
+    collection = None
+    request_data = None
+    document = None
+
+    try:
+        request_data = request.get_json()
+        document = request_data.get('document', {})
+    except Exception as _:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+
+
+    if collection_name == 'exercise_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'body_part_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'equipment_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'target_coll':
+        collection = db[collection_name]
+
+    elif collection_name == 'Users':
+        collection = db[collection_name]
+
+    elif collection_name == 'Splits':
+        collection = db[collection_name]
+
+    else:
+        return {'status': False, "message": "Please provide proper URL parameter."}, 400
+
+    print(document)
+
+    query = {'_id' : ObjectId(document['_id'])}
+
+
+
+    result = collection.update_one(query, {'$set': document}, upsert= False)
+
+    return result.raw_result
 
