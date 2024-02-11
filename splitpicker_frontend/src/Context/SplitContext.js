@@ -115,7 +115,7 @@ export const SplitContextProvider = ({ children }) => {
             try {
                 await axios.post('http://127.0.0.1:5000/get_user_by_firebase_id', {
                     'user_id': user.uid,
-                }, options).then((response) => {
+                }).then((response) => {
                     console.log("LOADED USER DATA: ");
                     console.log(JSON.stringify(response.data));
                 }, (error) => {

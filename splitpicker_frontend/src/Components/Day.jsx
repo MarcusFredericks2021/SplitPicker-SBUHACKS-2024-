@@ -1,8 +1,10 @@
 import { Box, Button, Card, CardBody, CardHeader, FormControl, FormLabel, Heading, HStack, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Stack, StackDivider, Switch, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useControllableState, useDisclosure } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import ExerciseSelector from './ExerciseSelector';
+import ExerciseCard from './ExerciseCard';
 
 export const Day = (props) => {
+
     const [isRest, setRest] = useControllableState({ defaultValue: false });
     const handleRestChange = (newValue) => {
         setRest(newValue);
@@ -44,8 +46,10 @@ export const Day = (props) => {
                     <HStack spacing={4} align="center">
                         <Box>
                             <ExerciseSelector />
+                            
                         </Box>
                     </HStack>
+                    <ExerciseCard />
                 </Stack>
             </CardBody>
         </Card>

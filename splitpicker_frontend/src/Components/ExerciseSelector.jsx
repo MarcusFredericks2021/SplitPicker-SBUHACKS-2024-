@@ -1,5 +1,6 @@
 import { Button, FormControl, FormErrorMessage, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure } from '@chakra-ui/react'
 import React, { useState } from 'react'
+import ExerciseModalGrid from './ExerciseModalGrid';
 
 const ExerciseSelector = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -10,7 +11,7 @@ const ExerciseSelector = () => {
     return (
         <>
             <Button onClick={onOpen}>Select Exercise</Button>
-            <Modal isOpen={isOpen} onClose={onClose}>
+            <Modal isOpen={isOpen} size = 'full' onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Select Exercise</ModalHeader>
@@ -24,7 +25,8 @@ const ExerciseSelector = () => {
                             </TabList>
                             <TabPanels>
                                 <TabPanel>
-                                    <p>one!</p>
+                                    {/* <p>one!</p> */}
+                                    <ExerciseModalGrid />
                                 </TabPanel>
                                 <TabPanel>
                                     <p>two!</p>
