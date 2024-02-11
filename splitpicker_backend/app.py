@@ -174,6 +174,27 @@ def get_collection_by_id(collection_name):
 
     return res
 
+@app.route('/get_user_by_firebase_id', methods = ['GET'])
+def get_user_by_firebase_id():
+    collection = None
+
+    request_data = None
+    ids = None
+    try:
+        request_data = request.get_json()
+    except Exception as _:
+        return {'status': False, "message": "Please provide proper request body."}, 400
+
+    #print(id
+    uid_token = request_data.get("user_id")
+
+    collection = db["Users"]
+
+    documents = list(collection.find({'firebase_id': uid_token}))
+
+    res = dumps(documents)
+
+    return res
 
 @app.route('/update/<collection_name>/', methods = ['PUT'])
 def update_colection_by_id(collection_name):

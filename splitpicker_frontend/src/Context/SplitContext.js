@@ -109,6 +109,24 @@ export const SplitContextProvider = ({ children }) => {
     const [currentSplitId, setCurrentSplitId] = useState("1");
 
     const [userData, setUserData] = useState(exampleUserData);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                await axios.post('http://127.0.0.1:5000/get_user_by_firebase_id', {
+                    'user_id': user.uid,
+                }, options).then((response) => {
+                    console.log("LOADED USER DATA: ");
+                    console.log(JSON.stringify(response.data));
+                }, (error) => {
+                    console.log(error);
+                });
+            } catch (err) {
+                console.log('Error occurred when fetching User Data.');
+            }
+        })();
+    }, [user])
+
     //console.log(JSON.stringify(userData));
 
     const saveSplitsToDatabase = async (all_splits) => {
