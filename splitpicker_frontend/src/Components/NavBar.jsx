@@ -33,7 +33,7 @@ import { SplitData } from '../Context/SplitContext';
 import { UserAuth } from '../Context/AuthContext';
 import { useRef, useState } from 'react';
 
-const Links = ['builder', 'exercises', 'splits', 'about'];
+const Links = ['builder', 'exercises', 'splits', 'studies', 'about'];
 
 export default function NavBar(props) {
     const { isOpen, onOpen, onClose } = useDisclosure();
