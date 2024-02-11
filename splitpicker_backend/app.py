@@ -131,7 +131,7 @@ def get_collection(collection_name):
     res = dumps(data)
     return res
 
-@app.route('/get_by_ids/<collection_name>/', methods = ['GET'])
+@app.route('/get_by_ids/<collection_name>/', methods = ['POST'])
 def get_collection_by_id(collection_name):
     collection = None
 
@@ -174,23 +174,14 @@ def get_collection_by_id(collection_name):
 
     return res
 
-@app.route('/get_user_by_firebase_id', methods = ['GET'])
-def get_user_by_firebase_id():
-    collection = None
-
-    request_data = None
-    ids = None
-    try:
-        request_data = request.get_json()
-    except Exception as _:
-        return {'status': False, "message": "Please provide proper request body."}, 400
-
-    #print(id
-    uid_token = request_data.get("user_id")
+@app.route('/get_user_by_firebase_id/<user_id>', methods = ['GET'])
+def get_user_by_firebase_id(user_id):
+    if not user_id:
+        return {'status': False, "message": "Please provide Firebase ID (user_id)"}, 400
 
     collection = db["Users"]
 
-    documents = list(collection.find({'firebase_id': uid_token}))
+    documents = list(collection.find({'firebase_id': user_id}))[0]
 
     res = dumps(documents)
 

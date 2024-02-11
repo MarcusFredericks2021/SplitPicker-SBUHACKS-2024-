@@ -27,7 +27,7 @@ export const SplitContextProvider = ({ children }) => {
 
     const exampleSplit = {
         "_id": { "$oid": "65c704ff8db5d588ced50627" },
-        "name": "Da Greatest PPL",
+        "name": "Da Greatest PPL TEST",
         "description": "Whats there to describe? Its the greatest PPL",
         "day1": {
             "is_rest": false,
@@ -113,16 +113,68 @@ export const SplitContextProvider = ({ children }) => {
     useEffect(() => {
         (async () => {
             try {
-                await axios.post('http://127.0.0.1:5000/get_user_by_firebase_id', {
-                    'user_id': user.uid,
-                }, options).then((response) => {
+                await axios.get('http://127.0.0.1:5000/get_user_by_firebase_id/' + user.uid).then(async (response) => {
                     console.log("LOADED USER DATA: ");
+                    //setUserData(response.data[0]);
+
                     console.log(JSON.stringify(response.data));
+                    let user_data = response.data;
+                    let splits = response.data.splits;
+                    let split_ids = [];
+                    for (let split in splits) {
+                        //"/get_by_ids/<collection_name>/";
+                        //console.log(split);
+                        let id = splits[split]["$oid"];
+                        split_ids.push(id);
+                    }
+                    let final_splits = [];
+                    //console.log(split_ids);
+                    await axios.post('http://127.0.0.1:5000/get_by_ids/Splits/',
+                        {
+                            "ids": split_ids
+
+                        }).then(async (response) => {
+                            //console.log(JSON.stringify(response.data));
+                            for (let split_index in response.data) {
+                                let split = response.data[split_index];
+                                for (let split_key in split) {
+                                    if (split_key.includes("day")) {
+                                        let split_data = split[split_key];
+                                        let exercise_oids = split_data["exercises"];
+                                        let exercise_ids = [];;
+                                        for (let exercise_index in exercise_oids) {
+                                            //console.log(exercise_oids[exercise_index])
+                                            let exercise_id = exercise_oids[exercise_index]["$oid"];
+                                            exercise_ids.push(exercise_id);
+                                        }
+                                        //console.log("exerciseid" + exercise_id);
+
+                                        await axios.post('http://127.0.0.1:5000/get_by_ids/exercise_coll/',
+                                            {
+                                                "ids": exercise_ids
+
+                                            }).then(async (response) => {
+                                                //console.log('exercisedata', JSON.stringify(response.data));
+                                                split_data["exercises"] = response.data;
+                                            }, (error) => {
+                                                console.log(error);
+                                            });
+                                        split[split_key] = split_data;
+                                    }
+                                }
+                                final_splits.push(split);
+                            }
+                        }, (error) => {
+                            console.log(error);
+                        });
+                    user_data.splits = final_splits;
+                    setUserData(user_data);
                 }, (error) => {
                     console.log(error);
                 });
             } catch (err) {
                 console.log('Error occurred when fetching User Data.');
+                console.log(err);
             }
         })();
     }, [user])
