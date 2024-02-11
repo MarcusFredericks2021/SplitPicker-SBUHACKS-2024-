@@ -187,8 +187,8 @@ def get_user_by_firebase_id(user_id):
 
     return res
 
-@app.route('/update/<collection_name>/', methods = ['PUT'])
-def update_colection_by_id(collection_name):
+@app.route('/update/<collection_name>/', methods = ['POST'])
+def update_collection_by_id(collection_name):
 
     collection = None
     request_data = None
@@ -230,8 +230,10 @@ def update_colection_by_id(collection_name):
     result = None
     try:
         query = {'_id' : ObjectId(document['_id']['$oid'])}
+        del document['_id']
         result = collection.update_one(query, {'$set': document}, upsert= False)
     except Exception as _:
+        print(_)
         return {'status': False, "message": "Update Query broke OR Invalid ObjectId you stupid"}, 400
 
     res = dumps(result.raw_result)
@@ -265,6 +267,7 @@ def create_new_user():
     return request_body
 
 @app.route('/create_new_split', methods=['POST'])
+
 def create_new_split():
     request_body = None
     try:
